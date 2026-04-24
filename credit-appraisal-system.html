@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Credit Appraisal — Citizens Bank</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bank-green: #1a5c3a;
+    --bank-green-mid: #2d7a52;
+    --bank-green-light: #3a9668;
+    --bank-green-pale: #e8f5ee;
+    --bank-green-hover: #134830;
+    --accent-gold: #c9963a;
+    --accent-red: #c0392b;
+    --accent-blue: #2563a8;
+    --accent-amber: #d97706;
+    --bg-main: #f4f6f4;
+    --bg-card: #ffffff;
+    --bg-sidebar: #1a5c3a;
+    --text-primary: #1a2e1a;
+    --text-secondary: #4a6350;
+    --text-muted: #8da695;
+    --border: #d4e4da;
+    --shadow: 0 2px 8px rgba(26,92,58,0.08);
+    --shadow-md: 0 4px 20px rgba(26,92,58,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── LOGIN SCREEN ── */
+  #login-screen {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #0d3320 0%, #1a5c3a 45%, #2d7a52 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  #login-screen.hide {
+    opacity: 0; pointer-events: none; transform: scale(1.03);
+  }
+
+  .login-card {
+    background: white;
+    border-radius: 4px;
+    padding: 0;
+    width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    overflow: hidden;
+  }
+  .login-header {
+    background: var(--bank-green);
+    padding: 20px 32px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .login-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px; color: white;
+  }
+  .login-logo span { color: #7ecfa0; font-style: italic; }
+  .login-title-bar {
+    background: #14432a;
+    color: #7ecfa0;
+    text-align: center;
+    font-size: 13px;
+    letter-spacing: 2px;
+    padding: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+  }
+  .login-body { padding: 32px; }
+  .login-body h2 {
+    font-size: 15px; font-weight: 500;
+    color: var(--bank-green);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .login-field {
+    position: relative; margin-bottom: 16px;
+  }
+  .login-field input {
+    width: 100%; padding: 12px 16px 12px 40px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .login-field input:focus { border-color: var(--bank-green-mid); }
+  .login-field .icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted); font-size: 15px;
+  }
+  .login-btn {
+    width: 100%; padding: 13px;
+    background: var(--bank-green);
+    color: white; border: none; border-radius: 2px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px; font-weight: 600;
+    letter-spacing: 1px; cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 8px;
+  }
+  .login-btn:hover { background: var(--bank-green-hover); }
+  .login-forgot { text-align: center; margin-top: 12px; }
+  .login-forgot a { font-size: 12px; color: var(--accent-red); text-decoration: none; }
+  .login-footer {
+    background: #f8fbf9;
+    border-top: 1px solid var(--border);
+    padding: 12px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .smartdoc-brand {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; font-weight: 700;
+    color: var(--bank-green);
+  }
+  .smartdoc-brand span { color: var(--accent-red); }
+  .login-copy { font-size: 10px; color: var(--text-muted); }
+
+  /* ── MAIN APP ── */
+  #app { display: none; }
+  #app.show { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* TOP NAV */
+  .top-nav {
+    background: var(--bank-green);
+    height: 52px;
+    display: flex; align-items: center;
+    padding: 0 16px;
+    gap: 0;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .top-nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px; color: white;
+    margin-right: 24px;
+    white-space: nowrap;
+  }
+  .top-nav-logo span { color: #8dd4a8; font-style: italic; }
+
+  .status-tabs {
+    display: flex; gap: 2px; flex: 1; overflow-x: auto;
+  }
+  .status-tab {
+    padding: 6px 14px;
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.75);
+    border-radius: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.3px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .status-tab:hover { background: rgba(255,255,255,0.1); color: white; }
+  .status-tab.active { background: rgba(255,255,255,0.18); color: white; }
+  .status-tab .badge {
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 1px 7px; font-size: 10px;
+  }
+  .status-tab.approved .badge { background: #27ae60; color: white; }
+  .status-tab.rejected .badge { background: #c0392b; color: white; }
+  .status-tab.pending .badge { background: #d97706; color: white; }
+
+  .top-nav-actions {
+    display: flex; gap: 8px; margin-left: 12px;
+  }
+  .nav-action-btn {
+    padding: 6px 14px;
+    background: var(--bank-green-mid);
+    color: white; border: none; border-radius: 2px;
+    font-size: 12px; cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .nav-action-btn:hover { background: var(--bank-green-light); }
+  .nav-action-btn.outline {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.4);
+  }
+
+  /* LAYOUT */
+  .main-layout {
+    display: flex; flex: 1;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px; min-width: 220px;
+    background: var(--bank-green);
+    display: flex; flex-direction: column;
+    padding-top: 8px;
+  }
+  .sidebar-search {
+    padding: 8px 12px;
+  }
+  .sidebar-search input {
+    width: 100%; padding: 7px 10px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 2px;
+    color: white; font-size: 12px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    outline: none;
+  }
+  .sidebar-search input::placeholder { color: rgba(255,255,255,0.5); }
+
+  .sidebar-section {
+    padding: 4px 0;
+  }
+  .sidebar-section-header {
+    padding: 8px 14px 4px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .sidebar-section-header .icon { font-size: 12px; }
+  .sidebar-item {
+    padding: 8px 14px 8px 22px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.78);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sidebar-item:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    padding-left: 26px;
+  }
+  .sidebar-item.active {
+    background: rgba(255,255,255,0.18);
+    color: white;
+    border-left: 3px solid #8dd4a8;
+    padding-left: 19px;
+  }
+  .sidebar-item .item-icon { font-size: 13px; opacity: 0.7; }
+
+  /* CONTENT AREA */
+  .content-area {
+    flex: 1; overflow-y: auto;
+    padding: 20px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+
+  /* PAGE TITLE */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .page-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px; color: var(--bank-green);
+  }
+  .page-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border-radius: 3px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    border-top: 3px solid transparent;
+    cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .stat-card.green { border-top-color: var(--bank-green); }
+  .stat-card.amber { border-top-color: var(--accent-amber); }
+  .stat-card.red { border-top-color: var(--accent-red); }
+  .stat-card.blue { border-top-color: var(--accent-blue); }
+  .stat-card.gold { border-top-color: var(--accent-gold); }
+  .stat-card.teal { border-top-color: #0d9488; }
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+  .stat-value { font-size: 26px; font-weight: 700; color: var(--text-primary); margin-top: 4px; }
+  .stat-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* GRID 2-COL */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+
+  /* CARD */
+  .card {
+    background: var(--bg-card);
+    border-radius: 3px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 600;
+    color: var(--bank-green);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .card-body { padding: 18px; }
+
+  /* CHART AREA */
+  .chart-wrapper { position: relative; height: 180px; }
+  canvas { width: 100% !important; }
+
+  /* BRANCH TABLE */
+  .branch-table { width: 100%; border-collapse: collapse; }
+  .branch-table th {
+    background: var(--bank-green);
+    color: white; font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.5px;
+    padding: 9px 14px; text-align: left;
+  }
+  .branch-table td {
+    padding: 9px 14px; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  .branch-table tr:last-child td { border-bottom: none; }
+  .branch-table tr:hover td { background: var(--bank-green-pale); }
+  .branch-rank {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--bank-green); color: white;
+    font-size: 10px; font-weight: 700; margin-right: 6px;
+  }
+  .branch-rank.gold { background: var(--accent-gold); }
+  .branch-rank.silver { background: #8d9aad; }
+
+  /* ACTIVITY FEED */
+  .activity-feed { display: flex; flex-direction: column; gap: 0; }
+  .activity-item {
+    display: flex; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background 0.15s;
+    padding-left: 4px;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-item:hover { background: var(--bank-green-pale); margin: 0 -18px; padding-left: 22px; padding-right: 18px; }
+  .activity-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--bank-green-mid);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 14px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .activity-info { flex: 1; }
+  .activity-id { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--bank-green-mid); font-weight: 600; }
+  .activity-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .activity-type { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .activity-time { font-size: 10px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+
+  /* APPLICATION TABLE VIEW */
+  .app-table-view { display: none; }
+  .app-table-view.show { display: block; }
+  .dashboard-view { display: block; }
+  .dashboard-view.hide { display: none; }
+
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    background: var(--bank-green);
+    color: white;
+    padding: 10px 14px; text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.5px;
+    position: sticky; top: 0;
+  }
+  .data-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .data-table tr:hover td { background: var(--bank-green-pale); cursor: pointer; }
+  .badge-status {
+    display: inline-block; padding: 3px 9px;
+    border-radius: 2px; font-size: 10px; font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px;
+  }
+  .badge-approved { background: #d1fae5; color: #065f46; }
+  .badge-pending { background: #fef3c7; color: #92400e; }
+  .badge-processing { background: #dbeafe; color: #1e40af; }
+  .badge-rejected { background: #fee2e2; color: #991b1b; }
+  .badge-initiated { background: #f3f4f6; color: #374151; }
+
+  /* DETAIL VIEW */
+  .detail-view { display: none; }
+  .detail-view.show { display: block; }
+
+  .detail-header-bar {
+    background: var(--bank-green);
+    color: white; padding: 12px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-radius: 3px 3px 0 0;
+  }
+  .detail-header-bar .app-id {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; font-weight: 600;
+  }
+  .detail-header-bar .app-status {
+    margin-left: auto;
+    padding: 4px 12px; border-radius: 2px;
+    background: #27ae60; font-size: 11px; font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .detail-action-bar {
+    background: #f0f7f2;
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .action-btn {
+    padding: 7px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.15s;
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: var(--text-primary);
+  }
+  .action-btn:hover { background: var(--bank-green); color: white; border-color: var(--bank-green); }
+  .action-btn.primary { background: var(--bank-green); color: white; border-color: var(--bank-green); }
+  .action-btn.danger { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+  .detail-tabs { display: flex; border-bottom: 2px solid var(--border); background: white; }
+  .detail-tab {
+    padding: 11px 20px; font-size: 13px; cursor: pointer;
+    color: var(--text-muted); border-bottom: 2px solid transparent;
+    margin-bottom: -2px; transition: all 0.15s;
+  }
+  .detail-tab:hover { color: var(--bank-green); }
+  .detail-tab.active { color: var(--bank-green); border-bottom-color: var(--bank-green); font-weight: 600; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* APPRAISAL DETAIL */
+  .appraisal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 20px; }
+  .applicant-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 3px; overflow: hidden;
+  }
+  .applicant-card-header {
+    background: #f0f7f2; padding: 14px 16px;
+    display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .applicant-photo {
+    width: 54px; height: 54px; border-radius: 50%;
+    background: var(--bank-green-mid);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 20px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .applicant-name { font-size: 16px; font-weight: 700; color: var(--bank-green); }
+  .applicant-cif { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .detail-row { display: flex; padding: 9px 16px; border-bottom: 1px solid #f0f0f0; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-key { font-size: 12px; color: var(--text-muted); width: 130px; flex-shrink: 0; }
+  .detail-val { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+
+  .facility-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .facility-table th { background: var(--bank-green); color: white; padding: 9px 14px; text-align: left; font-size: 12px; font-family: 'IBM Plex Mono', monospace; }
+  .facility-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .facility-table tfoot td { background: #f0f7f2; font-weight: 700; font-size: 13px; padding: 10px 14px; }
+
+  /* FILE LIST */
+  .file-section-title {
+    background: #e8f5ee; padding: 8px 16px;
+    font-size: 12px; font-weight: 600; color: var(--bank-green);
+    font-family: 'IBM Plex Mono', monospace; border-bottom: 1px solid var(--border);
+  }
+  .file-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    transition: background 0.15s; cursor: pointer;
+  }
+  .file-item:hover { background: var(--bank-green-pale); }
+  .file-sn { width: 24px; height: 24px; background: var(--bank-green); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .file-name { flex: 1; font-size: 12px; color: var(--text-primary); }
+  .file-date { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .file-dl { padding: 4px 10px; background: var(--accent-red); color: white; border-radius: 2px; font-size: 10px; font-weight: 700; cursor: pointer; }
+
+  /* AUDIT LOG */
+  .audit-timeline { padding: 20px; }
+  .audit-item { display: flex; gap: 16px; margin-bottom: 16px; }
+  .audit-line { display: flex; flex-direction: column; align-items: center; }
+  .audit-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--bank-green); flex-shrink: 0; }
+  .audit-connector { width: 2px; flex: 1; background: var(--border); margin-top: 4px; }
+  .audit-content { flex: 1; padding-bottom: 8px; }
+  .audit-action { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .audit-meta { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .audit-user { display: inline-block; padding: 2px 8px; background: var(--bank-green-pale); color: var(--bank-green); border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 6px; }
+
+  /* REPORT SIDEBAR */
+  .report-list { display: flex; flex-direction: column; }
+  .report-item {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: background 0.15s;
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .report-item:hover { background: var(--bank-green-pale); color: var(--bank-green); }
+  .report-item.active { background: var(--bank-green-pale); color: var(--bank-green); font-weight: 600; }
+  .report-icon { color: var(--bank-green-mid); font-size: 15px; }
+
+  /* BREADCRUMB */
+  .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .breadcrumb span { cursor: pointer; }
+  .breadcrumb span:hover { color: var(--bank-green); }
+  .breadcrumb .sep { color: var(--border); }
+
+  /* SEARCH BAR */
+  .search-bar {
+    display: flex; gap: 8px; align-items: center;
+    background: white; padding: 10px 14px;
+    border-radius: 3px; box-shadow: var(--shadow);
+    margin-bottom: 4px;
+  }
+  .search-bar input {
+    flex: 1; border: none; outline: none;
+    font-family: 'IBM Plex Sans', sans-serif; font-size: 13px;
+    color: var(--text-primary);
+  }
+  .search-bar select {
+    border: 1px solid var(--border); padding: 6px 10px;
+    border-radius: 2px; font-size: 12px;
+    font-family: 'IBM Plex Sans', sans-serif; color: var(--text-secondary);
+    outline: none;
+  }
+  .search-bar button {
+    padding: 7px 16px; background: var(--bank-green); color: white;
+    border: none; border-radius: 2px; font-size: 12px; cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+
+  /* FOOTER */
+  .app-footer {
+    background: var(--bank-green);
+    color: rgba(255,255,255,0.5);
+    text-align: center; font-size: 11px;
+    padding: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex; align-items: center; justify-content: center; gap: 20px;
+  }
+  .app-footer .brand { color: white; font-weight: 700; }
+  .app-footer .brand span { color: #f87171; }
+
+  /* WORKFLOW VISUAL */
+  .workflow-steps {
+    display: flex; align-items: center; gap: 0;
+    padding: 20px;
+    overflow-x: auto;
+  }
+  .wf-step {
+    display: flex; flex-direction: column; align-items: center;
+    min-width: 100px;
+  }
+  .wf-dot {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--bank-green-pale);
+    border: 2px solid var(--bank-green-mid);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; position: relative; z-index: 1;
+    transition: background 0.3s;
+  }
+  .wf-dot.done { background: var(--bank-green); color: white; border-color: var(--bank-green); }
+  .wf-dot.active { background: var(--accent-amber); color: white; border-color: var(--accent-amber); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(217,119,6,0.4)} 50%{box-shadow:0 0 0 8px rgba(217,119,6,0)} }
+  .wf-label { font-size: 10px; margin-top: 6px; text-align: center; color: var(--text-secondary); font-family: 'IBM Plex Mono', monospace; }
+  .wf-connector { flex: 1; height: 2px; background: var(--border); min-width: 20px; }
+  .wf-connector.done { background: var(--bank-green); }
+
+  .mt-2 { margin-top: 8px; }
+  .mt-4 { margin-top: 16px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .stats-row { grid-template-columns: repeat(3, 1fr); }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOGIN SCREEN ═══════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo"><span>Citizens</span> Bank</div>
+    </div>
+    <div class="login-title-bar">Smart Credit Appraisal System</div>
+    <div class="login-body">
+      <h2>Secure Login</h2>
+      <div class="login-field">
+        <span class="icon">👤</span>
+        <input type="text" id="login-user" placeholder="User Name" value="credit.officer" />
+      </div>
+      <div class="login-field">
+        <span class="icon">🔒</span>
+        <input type="password" id="login-pass" placeholder="Password" value="••••••••" />
+      </div>
+      <button class="login-btn" onclick="doLogin()">Login →</button>
+      <div class="login-forgot"><a href="#">Forgot Password?</a></div>
+    </div>
+    <div class="login-footer">
+      <div class="smartdoc-brand">SMART<span>DOC</span> <span style="font-size:9px;color:#8da695">INTELLIGENT DOCUMENT</span></div>
+      <div class="login-copy">Copyright © 2026 Inficare Pvt. Ltd.<br>Published: Jan 13, 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MAIN APP ═══════════════════ -->
+<div id="app">
+
+  <!-- TOP NAV -->
+  <nav class="top-nav">
+    <div class="top-nav-logo"><span>Citizens</span> Bank</div>
+    <div class="status-tabs">
+      <div class="status-tab" onclick="showView('initiated')">📋 Initiated <span class="badge">0</span></div>
+      <div class="status-tab" onclick="showView('mypending')">⏳ My Pending <span class="badge">0</span></div>
+      <div class="status-tab active" onclick="showView('processing')">⚙ My Processing <span class="badge pending">20</span></div>
+      <div class="status-tab approved" onclick="showView('approved')">✓ Approved <span class="badge approved">18</span></div>
+      <div class="status-tab rejected" onclick="showView('rejected')">✗ Rejected <span class="badge rejected" style="background:#c0392b">0</span></div>
+      <div class="status-tab" onclick="showView('memo')">📄 Pending Memo <span class="badge">0</span></div>
+      <div class="status-tab" onclick="showView('hsov')">🏛 HSOV Pending <span class="badge">0</span></div>
+      <div class="status-tab" onclick="showView('cad')">📑 Pending CAD <span class="badge">0</span></div>
+      <div class="status-tab" onclick="showView('processed')">✔ Processed CAD <span class="badge">0</span></div>
+    </div>
+    <div class="top-nav-actions">
+      <button class="nav-action-btn" onclick="showNewApplication()">+ Individual</button>
+      <button class="nav-action-btn" onclick="showNewApplication()">+ Institutional</button>
+      <button class="nav-action-btn outline" onclick="doLogout()">⏏ Logout</button>
+    </div>
+  </nav>
+
+  <!-- MAIN LAYOUT -->
+  <div class="main-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-search">
+        <input type="text" placeholder="Search..." />
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-header" onclick="toggleSection('appwf')">
+          <span class="icon">📂</span> Credit Application Workflow
+        </div>
+        <div id="appwf">
+          <div class="sidebar-item active" onclick="setActive(this); showAppTable('processing')">
+            <span class="item-icon">▸</span> My Processing List
+          </div>
+          <div class="sidebar-item" onclick="setActive(this); showAppTable('pending')">
+            <span class="item-icon">▸</span> Pending List
+          </div>
+          <div class="sidebar-item" onclick="setActive(this); showReports()">
+            <span class="item-icon">▸</span> Summary Report
+          </div>
+          <div class="sidebar-item" onclick="setActive(this); showAppTable('completed')">
+            <span class="item-icon">▸</span> Completed List
+          </div>
+          <div class="sidebar-item" onclick="setActive(this); showAppTable('rejected')">
+            <span class="item-icon">▸</span> Rejected List
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-header" onclick="toggleSection('cadwf')">
+          <span class="icon">📑</span> CAD Process Workflow
+        </div>
+        <div id="cadwf">
+          <div class="sidebar-item" onclick="setActive(this)">
+            <span class="item-icon">▸</span> Credit Memo
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-header" onclick="toggleSection('memowf')">
+          <span class="icon">📝</span> Credit Memo
+        </div>
+        <div id="memowf">
+          <div class="sidebar-item" onclick="setActive(this)">
+            <span class="item-icon">▸</span> Memo Pending List
+          </div>
+          <div class="sidebar-item" onclick="setActive(this)">
+            <span class="item-icon">▸</span> Memo My Processing List
+          </div>
+          <div class="sidebar-item" onclick="setActive(this)">
+            <span class="item-icon">▸</span> Memo Completed List
+          </div>
+          <div class="sidebar-item" onclick="setActive(this)">
+            <span class="item-icon">▸</span> Memo Rejected List
+          </div>
+          <div class="sidebar-item" onclick="setActive(this)">
+            <span class="item-icon">▸</span> Memo Summary Report
+          </div>
+          <div class="sidebar-item" onclick="setActive(this)">
+            <span class="item-icon">▸</span> Memo HSOV Pending
+          </div>
+          <div class="sidebar-item" onclick="setActive(this)">
+            <span class="item-icon">▸</span> Memo HSOV Completed
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-header" onclick="toggleSection('reports')">
+          <span class="icon">📊</span> Common Summary Report
+        </div>
+        <div id="reports">
+          <div class="sidebar-item" onclick="setActive(this); showReports()">
+            <span class="item-icon">📈</span> Common Summary
+          </div>
+          <div class="sidebar-item" onclick="setActive(this); showReports()">
+            <span class="item-icon">📈</span> Summary By Status
+          </div>
+          <div class="sidebar-item" onclick="setActive(this); showReports()">
+            <span class="item-icon">📈</span> Summary By Appraisal Type
+          </div>
+          <div class="sidebar-item" onclick="setActive(this); showReports()">
+            <span class="item-icon">📈</span> Summary By Branch
+          </div>
+          <div class="sidebar-item" onclick="setActive(this); showReports()">
+            <span class="item-icon">📈</span> Summary By FDR
+          </div>
+          <div class="sidebar-item" onclick="setActive(this); showReports()">
+            <span class="item-icon">📈</span> Summary By Individual
+          </div>
+          <div class="sidebar-item" onclick="setActive(this); showReports()">
+            <span class="item-icon">📈</span> Summary By Institutional
+          </div>
+          <div class="sidebar-item" onclick="setActive(this); showReports()">
+            <span class="item-icon">📈</span> Summary By TAT Pending
+          </div>
+          <div class="sidebar-item" onclick="setActive(this); showReports()">
+            <span class="item-icon">📈</span> Summary By TAT Approval
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content-area" id="content-area">
+
+      <!-- ── DASHBOARD VIEW ── -->
+      <div class="dashboard-view" id="dashboard-view">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb"><span>Home</span><span class="sep">/</span><span>Dashboard</span></div>
+            <div class="page-title">Credit Appraisal Dashboard</div>
+            <div class="page-subtitle">FY 2082/83 · In Millions (NPR)</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="action-btn" onclick="showAppTable('processing')">📋 View All Applications</button>
+            <button class="action-btn primary" onclick="showNewApplication()">+ New Application</button>
+          </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-row">
+          <div class="stat-card green" onclick="showAppTable('approved')">
+            <div class="stat-label">Approved</div>
+            <div class="stat-value">18</div>
+            <div class="stat-meta">NPR 4.0M total</div>
+          </div>
+          <div class="stat-card amber" onclick="showAppTable('processing')">
+            <div class="stat-label">Processing</div>
+            <div class="stat-value">20</div>
+            <div class="stat-meta">Across all branches</div>
+          </div>
+          <div class="stat-card red" onclick="showAppTable('rejected')">
+            <div class="stat-label">Rejected</div>
+            <div class="stat-value">0</div>
+            <div class="stat-meta">This period</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">Pending Memo</div>
+            <div class="stat-value">0</div>
+            <div class="stat-meta">CAD review queue</div>
+          </div>
+          <div class="stat-card gold">
+            <div class="stat-label">HSOV Pending</div>
+            <div class="stat-value">0</div>
+            <div class="stat-meta">Head office sign-off</div>
+          </div>
+          <div class="stat-card teal">
+            <div class="stat-label">Total Branches</div>
+            <div class="stat-value">47</div>
+            <div class="stat-meta">Active this FY</div>
+          </div>
+        </div>
+
+        <!-- CHART + ACTIVITY -->
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Approval Trend — FY 2082/83</span>
+              <div style="display:flex;gap:12px;font-size:11px;color:var(--text-muted)">
+                <span>✅ Approved</span>
+                <span>👤 Individual</span>
+                <span>🏢 Institutional</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrapper">
+                <canvas id="trend-chart"></canvas>
+              </div>
+              <div class="mt-4">
+                <table class="branch-table">
+                  <thead><tr><th>Top Performer Branch</th><th>Files</th><th>Amount (M)</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="branch-rank gold">1</span>KOLHUWA BRANCH</td><td>341</td><td>4</td></tr>
+                    <tr><td><span class="branch-rank silver">2</span>GHORAHI BRANCH</td><td>3131</td><td>4</td></tr>
+                    <tr><td><span class="branch-rank">3</span>BENI BRANCH</td><td>255</td><td>0</td></tr>
+                    <tr><td><span class="branch-rank">4</span>GARUDA BRANCH</td><td>489</td><td>0</td></tr>
+                    <tr><td><span class="branch-rank">5</span>BODEBARSHAIN BRANCH</td><td>395</td><td>0</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Recent Activities</span>
+              <button class="action-btn" style="font-size:11px;padding:4px 10px">View All</button>
+            </div>
+            <div class="card-body" style="padding:0 18px">
+              <div class="activity-feed">
+                <div class="activity-item" onclick="showDetail()">
+                  <div class="activity-avatar">C</div>
+                  <div class="activity-info">
+                    <div class="activity-id">CTZN-MEM-82/83-04-22</div>
+                    <div class="activity-desc">BHOTEWODAR BRANCH</div>
+                    <div class="activity-type">Credit Memo</div>
+                  </div>
+                  <div class="activity-time">Today</div>
+                </div>
+                <div class="activity-item" onclick="showDetail()">
+                  <div class="activity-avatar">C</div>
+                  <div class="activity-info">
+                    <div class="activity-id">CTZN-CA-82/83-05-04-22</div>
+                    <div class="activity-desc">ATTARIYA BRANCH</div>
+                    <div class="activity-type">Credit Card Application</div>
+                  </div>
+                  <div class="activity-time">Today</div>
+                </div>
+                <div class="activity-item" onclick="showDetail()">
+                  <div class="activity-avatar" style="background:#2563a8">C</div>
+                  <div class="activity-info">
+                    <div class="activity-id">CTZN-MEM-82/83-04-22</div>
+                    <div class="activity-desc">DHARAN BRANCH</div>
+                    <div class="activity-type">Credit Memo</div>
+                  </div>
+                  <div class="activity-time">Today</div>
+                </div>
+                <div class="activity-item" onclick="showDetail()">
+                  <div class="activity-avatar">C</div>
+                  <div class="activity-info">
+                    <div class="activity-id">CTZN-CA-82/83-17-04-22</div>
+                    <div class="activity-desc">KANCHANRUP BRANCH</div>
+                    <div class="activity-type">SME Loan Below 20M</div>
+                  </div>
+                  <div class="activity-time">Today</div>
+                </div>
+                <div class="activity-item" onclick="showDetail()">
+                  <div class="activity-avatar">C</div>
+                  <div class="activity-info">
+                    <div class="activity-id">CTZN-MEM-82/83-04-22</div>
+                    <div class="activity-desc">NARAYANGHAT BRANCH</div>
+                    <div class="activity-type">Credit Memo</div>
+                  </div>
+                  <div class="activity-time">Today</div>
+                </div>
+                <div class="activity-item" onclick="showDetail()">
+                  <div class="activity-avatar">C</div>
+                  <div class="activity-info">
+                    <div class="activity-id">CTZN-CA-82/83-00-04-22</div>
+                    <div class="activity-desc">DURBARMARGH BRANCH</div>
+                    <div class="activity-type">Individual Application</div>
+                  </div>
+                  <div class="activity-time">Today</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WORKFLOW OVERVIEW -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Credit Lifecycle — Workflow Status</span>
+          </div>
+          <div class="workflow-steps">
+            <div class="wf-step"><div class="wf-dot done">✓</div><div class="wf-label">Application<br>Intake</div></div>
+            <div class="wf-connector done"></div>
+            <div class="wf-step"><div class="wf-dot done">✓</div><div class="wf-label">KYC &<br>Documents</div></div>
+            <div class="wf-connector done"></div>
+            <div class="wf-step"><div class="wf-dot done">✓</div><div class="wf-label">Proposal<br>Creation</div></div>
+            <div class="wf-connector done"></div>
+            <div class="wf-step"><div class="wf-dot active">⚙</div><div class="wf-label">Risk<br>Assessment</div></div>
+            <div class="wf-connector"></div>
+            <div class="wf-step"><div class="wf-dot">◯</div><div class="wf-label">Workflow<br>Routing</div></div>
+            <div class="wf-connector"></div>
+            <div class="wf-step"><div class="wf-dot">◯</div><div class="wf-label">Multi-Level<br>Approval</div></div>
+            <div class="wf-connector"></div>
+            <div class="wf-step"><div class="wf-dot">◯</div><div class="wf-label">Loan<br>Booking</div></div>
+            <div class="wf-connector"></div>
+            <div class="wf-step"><div class="wf-dot">◯</div><div class="wf-label">Disbursement</div></div>
+            <div class="wf-connector"></div>
+            <div class="wf-step"><div class="wf-dot">◯</div><div class="wf-label">Monitoring<br>& EWS</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── APPLICATION TABLE VIEW ── -->
+      <div class="app-table-view" id="app-table-view">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb"><span onclick="showDashboard()">Home</span><span class="sep">/</span><span id="table-title">My Processing List</span></div>
+            <div class="page-title" id="table-heading">Credit Applications</div>
+          </div>
+          <button class="action-btn primary" onclick="showNewApplication()">+ New Application</button>
+        </div>
+
+        <div class="search-bar">
+          <span style="color:var(--text-muted)">🔍</span>
+          <input type="text" placeholder="Search by application ID, customer name, branch..." />
+          <select><option>All Types</option><option>Individual</option><option>Institutional</option><option>SME</option></select>
+          <select><option>All Branches</option><option>Kolhuwa Branch</option><option>Ghorahi Branch</option><option>Beni Branch</option></select>
+          <select><option>All Status</option><option>Approved</option><option>Processing</option><option>Pending</option><option>Rejected</option></select>
+          <button>Search</button>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Application ID</th>
+                  <th>Customer Name</th>
+                  <th>Branch</th>
+                  <th>Loan Type</th>
+                  <th>Amount (NRS)</th>
+                  <th>Proposal</th>
+                  <th>Status</th>
+                  <th>TAT</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr onclick="showDetail()">
+                  <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">CTZN-CA-82/83-131-00011051</td>
+                  <td><strong>New Star Auto Parts</strong><br><span style="font-size:11px;color:var(--text-muted)">Rakesh Kurmi · CIF: C004966518</span></td>
+                  <td>Taulihawa Branch</td>
+                  <td>Cash Credit (SME)</td>
+                  <td style="font-weight:700">9,650,000</td>
+                  <td><span style="font-size:11px;color:var(--accent-amber)">Enhancement</span></td>
+                  <td><span class="badge-status badge-approved">APPROVED</span></td>
+                  <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">68 Days</td>
+                  <td><button class="action-btn" onclick="event.stopPropagation();showDetail()" style="font-size:11px;padding:4px 10px">View</button></td>
+                </tr>
+                <tr onclick="showDetail()">
+                  <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">CTZN-CA-82/83-055-00008832</td>
+                  <td><strong>Himalayan Trading Co.</strong><br><span style="font-size:11px;color:var(--text-muted)">Binod Sharma · CIF: C007123456</span></td>
+                  <td>Ghorahi Branch</td>
+                  <td>Term Loan (SME)</td>
+                  <td style="font-weight:700">15,000,000</td>
+                  <td><span style="font-size:11px;color:var(--accent-blue)">New Loan</span></td>
+                  <td><span class="badge-status badge-processing">PROCESSING</span></td>
+                  <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">12 Days</td>
+                  <td><button class="action-btn" onclick="event.stopPropagation()" style="font-size:11px;padding:4px 10px">View</button></td>
+                </tr>
+                <tr onclick="showDetail()">
+                  <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">CTZN-CA-82/83-017-00006641</td>
+                  <td><strong>Sita Devi Poudel</strong><br><span style="font-size:11px;color:var(--text-muted)">Individual · CIF: C003891234</span></td>
+                  <td>Kanchanrup Branch</td>
+                  <td>Home Loan</td>
+                  <td style="font-weight:700">4,500,000</td>
+                  <td><span style="font-size:11px;color:var(--accent-amber)">Renewal</span></td>
+                  <td><span class="badge-status badge-pending">PENDING</span></td>
+                  <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">5 Days</td>
+                  <td><button class="action-btn" onclick="event.stopPropagation()" style="font-size:11px;padding:4px 10px">View</button></td>
+                </tr>
+                <tr onclick="showDetail()">
+                  <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">CTZN-CA-82/83-201-00013379</td>
+                  <td><strong>Narayani Suppliers Pvt.</strong><br><span style="font-size:11px;color:var(--text-muted)">Institutional · CIF: C009455781</span></td>
+                  <td>Narayanghat Branch</td>
+                  <td>OD Facility</td>
+                  <td style="font-weight:700">25,000,000</td>
+                  <td><span style="font-size:11px;color:var(--bank-green)">Enhancement</span></td>
+                  <td><span class="badge-status badge-approved">APPROVED</span></td>
+                  <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">22 Days</td>
+                  <td><button class="action-btn" onclick="event.stopPropagation()" style="font-size:11px;padding:4px 10px">View</button></td>
+                </tr>
+                <tr onclick="showDetail()">
+                  <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">CTZN-CA-82/83-088-00010024</td>
+                  <td><strong>Ram Bahadur Thapa</strong><br><span style="font-size:11px;color:var(--text-muted)">Individual · CIF: C002344512</span></td>
+                  <td>Attariya Branch</td>
+                  <td>Personal Loan</td>
+                  <td style="font-weight:700">800,000</td>
+                  <td><span style="font-size:11px;color:var(--accent-blue)">New Loan</span></td>
+                  <td><span class="badge-status badge-initiated">INITIATED</span></td>
+                  <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">1 Day</td>
+                  <td><button class="action-btn" onclick="event.stopPropagation()" style="font-size:11px;padding:4px 10px">View</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-muted)">
+            <span>Showing 5 of 20 results</span>
+            <div style="display:flex;gap:4px">
+              <button class="action-btn" style="font-size:11px;padding:4px 10px">← Prev</button>
+              <button class="action-btn primary" style="font-size:11px;padding:4px 10px">1</button>
+              <button class="action-btn" style="font-size:11px;padding:4px 10px">2</button>
+              <button class="action-btn" style="font-size:11px;padding:4px 10px">3</button>
+              <button class="action-btn" style="font-size:11px;padding:4px 10px">Next →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DETAIL VIEW ── -->
+      <div class="detail-view" id="detail-view">
+        <div class="breadcrumb" style="margin-bottom:12px">
+          <span onclick="showDashboard()">Home</span><span class="sep">/</span>
+          <span onclick="showAppTable('processing')">Applications</span><span class="sep">/</span>
+          <span style="color:var(--bank-green);font-family:'IBM Plex Mono',monospace;font-size:11px">CTZN-CA-82/83-131-00011051</span>
+        </div>
+
+        <div class="card">
+          <div class="detail-header-bar">
+            <span style="font-size:13px">Credit Application</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;margin-left:8px">Details | CTZN-CA-82/83-131-00011051 |</span>
+            <span class="app-status">APPROVED</span>
+          </div>
+
+          <div class="detail-action-bar">
+            <button class="action-btn">📋 Existing Appraisal</button>
+            <button class="action-btn">⚡ Actions ▾</button>
+            <button class="action-btn">🖨 Print</button>
+            <button class="action-btn">💳 Credit Details</button>
+            <button class="action-btn">📄 Credit Application</button>
+            <button class="action-btn">📁 Manual Doc</button>
+            <button class="action-btn danger">🔒 Lock Proposal</button>
+            <button class="action-btn" onclick="showAppTable('processing')" style="margin-left:auto">← Back</button>
+          </div>
+
+          <div class="detail-tabs">
+            <div class="detail-tab active" onclick="switchTab(this,'tab-details')">Details</div>
+            <div class="detail-tab" onclick="switchTab(this,'tab-files')">File Upload</div>
+            <div class="detail-tab" onclick="switchTab(this,'tab-risk')">Risk Observation</div>
+            <div class="detail-tab" onclick="switchTab(this,'tab-query')">Risk Query / Response</div>
+            <div class="detail-tab" onclick="switchTab(this,'tab-audit')">Audit Trail</div>
+          </div>
+
+          <!-- DETAILS TAB -->
+          <div class="tab-content active" id="tab-details">
+            <div class="appraisal-grid">
+              <div>
+                <div class="applicant-card">
+                  <div class="applicant-card-header">
+                    <div class="applicant-photo">N</div>
+                    <div>
+                      <div class="applicant-name">NEW STAR AUTO PARTS AND<br>MOBIL SUPPLIERS</div>
+                      <div class="applicant-cif">CIF No.: C004966518 · 📞 9819430009</div>
+                    </div>
+                  </div>
+                  <div class="detail-row"><span class="detail-key">Group</span><span class="detail-val">Sister's Associate</span></div>
+                  <div class="detail-row"><span class="detail-key">Address</span><span class="detail-val">Bhichhuchowk-3, Kapilvastu, Lumbini Province</span></div>
+                  <div class="detail-row"><span class="detail-key">Contact</span><span class="detail-val">Rakesh Kurmi · 9819430009</span></div>
+                  <div class="detail-row"><span class="detail-key">Branch</span><span class="detail-val">Taulihawa Branch · 68 Days</span></div>
+                </div>
+
+                <div class="applicant-card mt-4">
+                  <div style="padding:12px 16px;background:#f0f7f2;font-weight:700;font-size:13px;color:var(--bank-green);border-bottom:1px solid var(--border)">
+                    Shareholder's Information / Registration Details
+                  </div>
+                  <div class="detail-row"><span class="detail-key">Registered At</span><span class="detail-val">Office of Cottage and Small Industry</span></div>
+                  <div class="detail-row"><span class="detail-key">Reg. Date</span><span class="detail-val">2068-04-12</span></div>
+                  <div class="detail-row"><span class="detail-key">Reg. No.</span><span class="detail-val">2150/068</span></div>
+                  <div class="detail-row"><span class="detail-key">PAN No.</span><span class="detail-val">304559143</span></div>
+                  <div class="detail-row"><span class="detail-key">Address</span><span class="detail-val">Bhichhuchowk-4, Kapilvastu, Lumbini Province</span></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="applicant-card">
+                  <div style="padding:12px 16px;background:#f0f7f2;font-weight:700;font-size:13px;color:var(--bank-green);border-bottom:1px solid var(--border)">
+                    Credit Appraisal Detail — <span style="color:#27ae60">APPROVED</span>
+                  </div>
+                  <table class="facility-table">
+                    <thead><tr><th>SN</th><th>Facility</th><th>NRs</th><th>Proposal</th><th>Review Date</th></tr></thead>
+                    <tbody>
+                      <tr><td>1</td><td>ctz080 – Cash Credit</td><td style="font-family:'IBM Plex Mono',monospace">9,650,000.00</td><td><span style="color:var(--accent-amber)">Enhancement</span></td><td>—</td></tr>
+                    </tbody>
+                    <tfoot><tr><td colspan="2"><strong>Total Amount</strong></td><td colspan="3" style="font-family:'IBM Plex Mono',monospace"><strong>9,650,000.00</strong></td></tr></tfoot>
+                  </table>
+                </div>
+
+                <div class="applicant-card mt-4">
+                  <div style="padding:12px 16px;background:#f0f7f2;font-weight:700;font-size:13px;color:var(--bank-green);border-bottom:1px solid var(--border)">
+                    Processing Team
+                  </div>
+                  <div class="detail-row"><span class="detail-key">Branch Officer</span><span class="detail-val">Bal Ch. ██████</span></div>
+                  <div class="detail-row"><span class="detail-key">Credit Analyst</span><span class="detail-val">████ (EGMI)</span></div>
+                  <div class="detail-row"><span class="detail-key">Approver</span><span class="detail-val">████████</span></div>
+                  <div class="detail-row"><span class="detail-key">CIB Status</span><span class="detail-val" style="color:#27ae60">✓ Verified</span></div>
+                  <div class="detail-row"><span class="detail-key">NRB Reporting</span><span class="detail-val">Included in FY 2082/83 batch</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FILES TAB -->
+          <div class="tab-content" id="tab-files">
+            <div style="padding:12px 16px;display:flex;gap:8px;border-bottom:1px solid var(--border)">
+              <button class="action-btn primary">All Files</button>
+              <button class="action-btn">⬇ Download ZIP</button>
+            </div>
+
+            <div class="file-section-title">1. Security Documents</div>
+            <div class="file-item">
+              <div class="file-sn">1</div>
+              <div class="file-name">Collateral related documents.pdf</div>
+              <div class="file-date">2026-02-12</div>
+              <div class="file-dl">PDF</div>
+            </div>
+            <div class="file-item">
+              <div class="file-sn">2</div>
+              <div class="file-name">Demarcation of plot no 1595 and 2075.pdf</div>
+              <div class="file-date">2026-02-26</div>
+              <div class="file-dl">PDF</div>
+            </div>
+
+            <div class="file-section-title">19. Blue Print / Trace Map (Bank Staff/Valuator)</div>
+            <div class="file-item">
+              <div class="file-sn">3</div>
+              <div class="file-name">Blue print plot no2075.pdf</div>
+              <div class="file-date">2026-03-02</div>
+              <div class="file-dl">PDF</div>
+            </div>
+            <div class="file-item">
+              <div class="file-sn">4</div>
+              <div class="file-name">Clear Blue print plot 1595.pdf</div>
+              <div class="file-date">2026-03-02</div>
+              <div class="file-dl">PDF</div>
+            </div>
+            <div class="file-item">
+              <div class="file-sn">5</div>
+              <div class="file-name">Bato sifaris of plot no 1595.pdf</div>
+              <div class="file-date">2026-03-02</div>
+              <div class="file-dl">PDF</div>
+            </div>
+
+            <div class="file-section-title">Valuation Report</div>
+            <div class="file-item">
+              <div class="file-sn">6</div>
+              <div class="file-name">Valuation Report 2075.pdf</div>
+              <div class="file-date">2026-02-26</div>
+              <div class="file-dl">PDF</div>
+            </div>
+            <div class="file-item">
+              <div class="file-sn">7</div>
+              <div class="file-name">Valuation Report 1595.pdf</div>
+              <div class="file-date">2026-03-01</div>
+              <div class="file-dl">PDF</div>
+            </div>
+            <div class="file-item">
+              <div class="file-sn">8</div>
+              <div class="file-name">Valuation Certificate of plot no 2075.pdf</div>
+              <div class="file-date">2026-03-01</div>
+              <div class="file-dl">PDF</div>
+            </div>
+            <div class="file-item">
+              <div class="file-sn">9</div>
+              <div class="file-name">New Star Auto Valuator Response.pdf</div>
+              <div class="file-date">2026-02-23</div>
+              <div class="file-dl">PDF</div>
+            </div>
+
+            <div class="file-section-title">Application for Proposed Credit Facility / KYC Documents</div>
+            <div class="file-item">
+              <div class="file-sn">10</div>
+              <div class="file-name">Application Form related.pdf</div>
+              <div class="file-date">2026-02-12</div>
+              <div class="file-dl">PDF</div>
+            </div>
+
+            <div class="file-section-title">Business Related Documents (Firm Registration, PAN/VAT, Anta Sulka)</div>
+            <div class="file-item" style="color:var(--text-muted);font-style:italic;font-size:12px;padding:14px 16px">
+              + Upload additional documents here
+            </div>
+          </div>
+
+          <!-- RISK TAB -->
+          <div class="tab-content" id="tab-risk">
+            <div style="padding:20px">
+              <div class="card" style="margin-bottom:16px">
+                <div class="card-header"><span class="card-title">Risk Assessment Summary</span><span style="font-size:11px;color:var(--bank-green);font-family:'IBM Plex Mono',monospace">Score: 72 / 100 — LOW RISK</span></div>
+                <div class="card-body">
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+                    <div style="text-align:center;padding:12px;background:var(--bank-green-pale);border-radius:3px">
+                      <div style="font-size:22px;font-weight:700;color:var(--bank-green)">72</div>
+                      <div style="font-size:11px;color:var(--text-muted)">Credit Score</div>
+                    </div>
+                    <div style="text-align:center;padding:12px;background:#fef3c7;border-radius:3px">
+                      <div style="font-size:22px;font-weight:700;color:var(--accent-amber)">B+</div>
+                      <div style="font-size:11px;color:var(--text-muted)">Rating Grade</div>
+                    </div>
+                    <div style="text-align:center;padding:12px;background:#dbeafe;border-radius:3px">
+                      <div style="font-size:22px;font-weight:700;color:var(--accent-blue)">2.3x</div>
+                      <div style="font-size:11px;color:var(--text-muted)">DSCR</div>
+                    </div>
+                    <div style="text-align:center;padding:12px;background:var(--bank-green-pale);border-radius:3px">
+                      <div style="font-size:22px;font-weight:700;color:var(--bank-green)">✓</div>
+                      <div style="font-size:11px;color:var(--text-muted)">CIB Verified</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="padding:12px;background:#fffbeb;border:1px solid #fbbf24;border-radius:3px;font-size:13px">
+                <strong>⚠ Observations:</strong> Enhancement request within normal parameters. Collateral valuation supports LTV ratio. Business showing positive turnover trend. Guarantors verified. No CIB defaults recorded.
+              </div>
+            </div>
+          </div>
+
+          <!-- QUERY TAB -->
+          <div class="tab-content" id="tab-query">
+            <div style="padding:20px">
+              <div style="font-size:13px;color:var(--text-muted);font-style:italic">No pending risk queries for this application.</div>
+            </div>
+          </div>
+
+          <!-- AUDIT TAB -->
+          <div class="tab-content" id="tab-audit">
+            <div class="audit-timeline">
+              <div class="audit-item">
+                <div class="audit-line"><div class="audit-dot" style="background:#27ae60"></div><div class="audit-connector"></div></div>
+                <div class="audit-content">
+                  <div class="audit-action">✅ Application APPROVED</div>
+                  <div class="audit-meta"><span class="audit-user">Head Office</span> 2026-04-15 · 14:32:07 · IP: 10.1.2.45</div>
+                </div>
+              </div>
+              <div class="audit-item">
+                <div class="audit-line"><div class="audit-dot"></div><div class="audit-connector"></div></div>
+                <div class="audit-content">
+                  <div class="audit-action">📋 HSOV Sign-off Completed</div>
+                  <div class="audit-meta"><span class="audit-user">Regional Manager</span> 2026-04-10 · 11:20:15 · IP: 10.1.5.12</div>
+                </div>
+              </div>
+              <div class="audit-item">
+                <div class="audit-line"><div class="audit-dot"></div><div class="audit-connector"></div></div>
+                <div class="audit-content">
+                  <div class="audit-action">📄 Proposal Locked (v3 — Final)</div>
+                  <div class="audit-meta"><span class="audit-user">Credit Analyst</span> 2026-04-08 · 16:05:42 · IP: 10.1.3.78</div>
+                </div>
+              </div>
+              <div class="audit-item">
+                <div class="audit-line"><div class="audit-dot"></div><div class="audit-connector"></div></div>
+                <div class="audit-content">
+                  <div class="audit-action">📁 9 Documents Uploaded (Valuation + Collateral)</div>
+                  <div class="audit-meta"><span class="audit-user">Branch Officer</span> 2026-03-02 · 09:15:30 · IP: 10.2.8.99</div>
+                </div>
+              </div>
+              <div class="audit-item">
+                <div class="audit-line"><div class="audit-dot"></div><div class="audit-connector"></div></div>
+                <div class="audit-content">
+                  <div class="audit-action">⚙ Risk Assessment Completed — Score: 72 (B+)</div>
+                  <div class="audit-meta"><span class="audit-user">Risk Engine</span> 2026-02-28 · 13:44:19 · Automated</div>
+                </div>
+              </div>
+              <div class="audit-item">
+                <div class="audit-line"><div class="audit-dot"></div><div class="audit-connector"></div></div>
+                <div class="audit-content">
+                  <div class="audit-action">📋 Application Created — Draft Proposal v1</div>
+                  <div class="audit-meta"><span class="audit-user">Branch Officer</span> 2026-02-12 · 10:02:05 · Taulihawa Branch</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── REPORTS VIEW ── -->
+      <div class="app-table-view" id="reports-view">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb"><span onclick="showDashboard()">Home</span><span class="sep">/</span><span>Common Summary Report</span></div>
+            <div class="page-title">Summary Reports</div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Summary By Branch</span></div>
+            <div class="card-body" style="padding:0">
+              <table class="branch-table">
+                <thead><tr><th>Branch</th><th>Files</th><th>Amount (M)</th><th>Approved</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="branch-rank gold">1</span>Kolhuwa Branch</td><td>341</td><td>4</td><td><span class="badge-status badge-approved">18</span></td></tr>
+                  <tr><td><span class="branch-rank silver">2</span>Ghorahi Branch</td><td>3131</td><td>4</td><td><span class="badge-status badge-approved">12</span></td></tr>
+                  <tr><td><span class="branch-rank">3</span>Beni Branch</td><td>255</td><td>0</td><td><span class="badge-status badge-pending">3</span></td></tr>
+                  <tr><td><span class="branch-rank">4</span>Garuda Branch</td><td>489</td><td>0</td><td><span class="badge-status badge-pending">5</span></td></tr>
+                  <tr><td><span class="branch-rank">5</span>Bodebarshain Branch</td><td>395</td><td>0</td><td><span class="badge-status badge-pending">2</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Summary By Status</span></div>
+            <div class="card-body">
+              <div class="chart-wrapper"><canvas id="status-chart"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="app-footer">
+    <span>2026 © Inficare Pvt. Ltd.</span>
+    <span class="brand">SMART<span>DOC</span> INTELLIGENT DOCUMENT</span>
+    <span>NRB Compliant · AES-256 · TLS 1.3 · WORM Audit</span>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  // ── LOGIN ──
+  function doLogin() {
+    document.getElementById('login-screen').classList.add('hide');
+    setTimeout(() => {
+      document.getElementById('app').classList.add('show');
+      initCharts();
+    }, 600);
+  }
+
+  function doLogout() {
+    document.getElementById('app').classList.remove('show');
+    document.getElementById('login-screen').classList.remove('hide');
+  }
+
+  // ── NAV VIEWS ──
+  function showView(type) {
+    document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+    event.target.closest('.status-tab').classList.add('active');
+    if (['approved','processing','pending','rejected','completed'].includes(type)) {
+      showAppTable(type);
+    }
+  }
+
+  function showDashboard() {
+    hide(['app-table-view','detail-view','reports-view']);
+    show('dashboard-view');
+  }
+
+  function showAppTable(type) {
+    hide(['dashboard-view','detail-view','reports-view']);
+    show('app-table-view');
+    const titles = {
+      processing: ['My Processing List','Applications In Processing'],
+      pending: ['Pending List','Pending Applications'],
+      approved: ['Approved List','Approved Applications'],
+      rejected: ['Rejected List','Rejected Applications'],
+      completed: ['Completed List','Completed Applications']
+    };
+    const t = titles[type] || ['Applications','Credit Applications'];
+    document.getElementById('table-title').textContent = t[0];
+    document.getElementById('table-heading').textContent = t[1];
+  }
+
+  function showDetail() {
+    hide(['dashboard-view','app-table-view','reports-view']);
+    show('detail-view');
+  }
+
+  function showReports() {
+    hide(['dashboard-view','app-table-view','detail-view']);
+    show('reports-view');
+    setTimeout(initStatusChart, 100);
+  }
+
+  function showNewApplication() {
+    alert('Opening new credit application form...\n\n(In production: multi-step application intake form with KYC upload, risk scoring, and maker-checker workflow)');
+  }
+
+  function hide(ids) {
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.display = 'none'; }
+    });
+  }
+
+  function show(id) {
+    const el = document.getElementById(id);
+    if (el) { el.style.display = 'block'; }
+  }
+
+  // ── SIDEBAR ──
+  function setActive(el) {
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function toggleSection(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = el.style.display === 'none' ? '' : 'none';
+  }
+
+  // ── TABS ──
+  function switchTab(el, tabId) {
+    document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+
+  // ── CHARTS ──
+  let trendChart = null, statusChart = null;
+
+  function initCharts() {
+    const ctx = document.getElementById('trend-chart');
+    if (!ctx) return;
+    if (trendChart) trendChart.destroy();
+    trendChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+        datasets: [
+          {
+            label: 'Approved',
+            data: [0.05, 0.08, 0.12, 0.18, null, null, null, null, null, null, null, null],
+            borderColor: '#1a5c3a', backgroundColor: 'rgba(26,92,58,0.08)',
+            tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#1a5c3a'
+          },
+          {
+            label: 'Individual',
+            data: [0.02, 0.05, 0.07, 0.10, null, null, null, null, null, null, null, null],
+            borderColor: '#c9963a', borderDash: [5,4],
+            tension: 0.4, pointRadius: 3, pointBackgroundColor: '#c9963a'
+          },
+          {
+            label: 'Institutional',
+            data: [0.03, 0.03, 0.05, 0.08, null, null, null, null, null, null, null, null],
+            borderColor: '#2563a8', borderDash: [3,3],
+            tension: 0.4, pointRadius: 3, pointBackgroundColor: '#2563a8'
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#8da695' } },
+          x: { grid: { display: false }, ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#8da695' } }
+        }
+      }
+    });
+  }
+
+  function initStatusChart() {
+    const ctx = document.getElementById('status-chart');
+    if (!ctx || statusChart) return;
+    statusChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Approved','Processing','Pending','Rejected'],
+        datasets: [{
+          data: [18, 20, 8, 2],
+          backgroundColor: ['#1a5c3a','#d97706','#2563a8','#c0392b'],
+          borderWidth: 2, borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: { family: 'IBM Plex Sans', size: 12 } } } }
+      }
+    });
+  }
+
+  // Allow Enter key on login
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && document.getElementById('login-screen').style.opacity !== '0') {
+      doLogin();
+    }
+  });
+</script>
+</body>
+</html>
