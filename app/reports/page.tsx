@@ -29,7 +29,7 @@ export default function ReportsPage() {
           <p className="text-sm text-slate-500 mt-1">System-wide credit appraisal portfolio metrics.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="secondary" size="sm">
             <Filter className="h-3.5 w-3.5 mr-2" />
             Filters
           </Button>

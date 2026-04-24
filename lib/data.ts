@@ -27,7 +27,7 @@ export interface AppraisalCase {
   borrowerCIF: string;
   facilityAmount: number;
   ltv: number;
-  status: 'draft' | 'pending_supporter' | 'pending_reviewer' | 'pending_approver' | 'approved' | 'returned';
+  status: 'draft' | 'pending_supporter' | 'pending_reviewer' | 'pending_approver' | 'approved' | 'returned' | 'rejected';
   currentStage: string;
   createdAt: string;
   createdBy: string;

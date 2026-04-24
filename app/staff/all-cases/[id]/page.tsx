@@ -51,7 +51,7 @@ export default function CaseDetailPage({ params }: { params: Promise<{ id: strin
         <h2 className="text-xl font-display font-bold text-slate-800">Case Not Found</h2>
         <p className="text-sm text-slate-500 mt-2">The appraisal case you are looking for does not exist.</p>
         <Link href="/staff/all-cases" className="mt-6">
-          <Button variant="outline">Back to All Cases</Button>
+          <Button variant="secondary">Back to All Cases</Button>
         </Link>
       </div>
     );
@@ -95,7 +95,7 @@ export default function CaseDetailPage({ params }: { params: Promise<{ id: strin
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
+            <Button variant="secondary" size="sm">
               <Printer className="h-3.5 w-3.5 mr-2" />
               Print
             </Button>
@@ -136,7 +136,7 @@ export default function CaseDetailPage({ params }: { params: Promise<{ id: strin
               <DropdownItem icon={UserPlus}>Re-assign Case</DropdownItem>
             </Dropdown>
 
-            <Button variant="outline" size="sm">
+            <Button variant="secondary" size="sm">
               <MoreVertical className="h-3.5 w-3.5" />
             </Button>
           </div>

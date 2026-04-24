@@ -210,7 +210,7 @@ export default function CreateMemoPage() {
 
       {/* Actions */}
       <div className="flex items-center justify-end gap-3 pb-8">
-        <Button variant="outline" onClick={() => router.back()}>Cancel</Button>
+        <Button variant="secondary" onClick={() => router.back()}>Cancel</Button>
         <Button onClick={handleSubmit}>Submit for Review</Button>
       </div>
     </div>

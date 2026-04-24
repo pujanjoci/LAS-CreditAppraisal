@@ -223,7 +223,7 @@ export default function MemoReviewPage() {
                   <DropdownItem icon={FileBarChart}>View Full Report</DropdownItem>
                 </Dropdown>
 
-                <Button variant="outline" onClick={() => setSelectedMemo(null)}>
+                <Button variant="secondary" onClick={() => setSelectedMemo(null)}>
                   Cancel
                 </Button>
               </div>
