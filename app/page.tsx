@@ -27,7 +27,9 @@ export default function LoginPage() {
         return;
       }
       const user = JSON.parse(localStorage.getItem('credit_user') || '{}');
-      if (user.role === 'admin') {
+      if (user.role === 'super_admin') {
+        router.push('/superadmin/dashboard');
+      } else if (user.role === 'admin') {
         router.push('/admin/dashboard');
       } else {
         router.push('/staff/dashboard');

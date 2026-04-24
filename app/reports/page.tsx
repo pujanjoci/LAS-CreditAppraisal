@@ -23,24 +23,24 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-display font-bold text-slate-800">Analytics & Reports</h2>
           <p className="text-sm text-slate-500 mt-1">System-wide credit appraisal portfolio metrics.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm">
+        <div className="flex gap-2">
+          <Button variant="secondary" size="sm" className="flex-1 sm:flex-none">
             <Filter className="h-3.5 w-3.5 mr-2" />
             Filters
           </Button>
-          <Button variant="primary" size="sm">
+          <Button variant="primary" size="sm" className="flex-1 sm:flex-none">
             <FileBarChart className="h-3.5 w-3.5 mr-2" />
             Generate Full Report
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard title="Total ML Portfolio" value={formatNPR(metrics.totalPortfolio)} trend="up" change="+12.5%" />
         <MetricCard title="Avg Portfolio LTV" value={`${metrics.avgLTV.toFixed(1)}%`} trend="down" change="-2.1%" />
         <MetricCard
@@ -55,20 +55,20 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <div className="flex items-center justify-between w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-2">
               <CardTitle>Approval Trend — FY 2082/83</CardTitle>
-              <select className="text-xs border-slate-200 rounded-md bg-white px-2 py-1 outline-none">
+              <select className="text-xs border border-slate-200 rounded-lg bg-white px-3 py-1.5 outline-none hover:border-accent-300 transition-colors cursor-pointer w-full sm:w-auto">
                 <option>Last 12 Months</option>
                 <option>Quarterly</option>
               </select>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="h-[300px] sm:h-auto">
             <ApprovalTrend />
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle>Summary By Status</CardTitle>
           </CardHeader>
@@ -79,12 +79,14 @@ export default function ReportsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 overflow-hidden">
           <CardHeader>
             <CardTitle>Summary By Branch</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <SummaryBranchTable />
+            <div className="overflow-x-auto">
+              <SummaryBranchTable />
+            </div>
           </CardContent>
         </Card>
 
@@ -94,31 +96,34 @@ export default function ReportsPage() {
               <CardTitle>Export Regulatory Reports</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button variant="secondary" size="sm" className="w-full justify-start">
-                <Download className="h-3.5 w-3.5 mr-2" />
+              <Button variant="secondary" size="sm" className="w-full justify-start text-xs h-10 px-4">
+                <Download className="h-4 w-4 mr-3" />
                 NRB Regulatory Return
               </Button>
-              <Button variant="secondary" size="sm" className="w-full justify-start">
-                <Download className="h-3.5 w-3.5 mr-2" />
+              <Button variant="secondary" size="sm" className="w-full justify-start text-xs h-10 px-4">
+                <Download className="h-4 w-4 mr-3" />
                 Margin Call Register
               </Button>
               {isAdmin && (
-                <Button variant="secondary" size="sm" className="w-full justify-start">
-                  <Download className="h-3.5 w-3.5 mr-2" />
+                <Button variant="secondary" size="sm" className="w-full justify-start text-xs h-10 px-4">
+                  <Download className="h-4 w-4 mr-3" />
                   Concentration Report
                 </Button>
               )}
-              <Button variant="secondary" size="sm" className="w-full justify-start">
-                <Download className="h-3.5 w-3.5 mr-2" />
+              <Button variant="secondary" size="sm" className="w-full justify-start text-xs h-10 px-4">
+                <Download className="h-4 w-4 mr-3" />
                 Portfolio Ageing
               </Button>
             </CardContent>
           </Card>
 
-          <div className="bg-accent-50 border border-accent-100 rounded-xl p-5">
-            <h4 className="text-sm font-bold text-accent-800 mb-1">Portfolio Healthy</h4>
-            <p className="text-xs text-accent-700 leading-relaxed">
-              Overall portfolio LTV is currently at 58.2%, which is 6.8% below the regulatory ceiling of 65%. 
+          <div className="bg-accent-50/50 border border-accent-100 rounded-xl p-6 shadow-sm">
+            <h4 className="text-sm font-bold text-accent-800 mb-2 flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              Portfolio Health: Excellent
+            </h4>
+            <p className="text-xs text-accent-700 leading-relaxed font-medium">
+              Overall portfolio LTV is currently at <span className="text-accent-900 font-bold">58.2%</span>, which is 6.8% below the regulatory ceiling of 65%. 
               Concentration in Banking sector remains at 35%, well within the 40% cap.
             </p>
           </div>
