@@ -40,7 +40,7 @@ export const StatusDonut = ({ data, title }: StatusDonutProps) => {
                 fontSize: '12px',
                 padding: '8px 12px',
               }}
-              formatter={(value: number, name: string) => [`${value} cases`, name]}
+              formatter={(value: any, name: any) => [`${value} cases`, name]}
             />
           </PieChart>
         </ResponsiveContainer>
