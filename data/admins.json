@@ -2,7 +2,7 @@
   {
     "id": "101",
     "username": "admin",
-    "password": "admin123",
+    "password": "Admin@123",
     "name": "Admin User",
     "email": "admin@bank.com.np",
     "role": "admin",
@@ -11,7 +11,7 @@
   {
     "id": "102",
     "username": "superadmin",
-    "password": "admin123",
+    "password": "SuperAdmin@123",
     "name": "Super Admin",
     "email": "superadmin@bank.com.np",
     "role": "super_admin",
