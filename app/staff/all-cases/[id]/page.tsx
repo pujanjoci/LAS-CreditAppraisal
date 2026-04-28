@@ -408,7 +408,3 @@ function StatusLine({ label, value, valueClass = "text-slate-700 font-medium" }:
     </div>
   );
 }
-      </div>
-    </div>
-  );
-}
